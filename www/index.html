@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<!--
+Forward data to Telia IoT using Texas Instrument BLE Sensortag
+-->
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="viewport" content="width=device-width, user-scalable=no
+		initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+
+	<title>Telia IoT - Sensortag</title>
+
+	<style>
+	@import 'ui/css/telia-app.css';
+	</style>
+
+	<script>
+	// Redirect console.log to Evothings Workbench.
+	if (window.hyper && window.hyper.log) { console.log = hyper.log }
+	</script>
+</head>
+
+<body>
+	<header>
+		<button class="back" onclick="history.back()">
+			<img src="ui/images/arrow-left.svg" />
+		</button>
+		<img class="logotype" src="ui/images/logo.svg" alt="Evothings" />
+	</header>
+
+	<h1>Sensortag To Telia IoT</h1>
+
+	<p>The credentials for Telia IoT is configured in aws-config.js file. </p>
+	<p>Update of credentials in-app must be supported later.</p>
+
+	<div>
+		<!--
+		<button class="green wide" onclick="openReadWriteDemo()">
+			Read/Write Demo<br/>
+		</button>
+		-->
+
+		<button class="pink wide" onclick="openWriteSaveDemo()">
+			Read and Write demo<br/>
+		</button>
+
+		<!--
+		<button class="blue wide" onclick="openReadDemo()">
+			Read Demo<br/>
+		</button>
+		-->
+
+		<button class="red wide" onclick="openSensorTagDemo()">
+			SensorTag Demo<br/>
+		</button>
+	</div>
+
+	<script src="libs/evothings/evothings.js"></script>
+
+	<script>
+	function openReadWriteDemo()
+	{
+		window.location.assign('aws-app-read-write.html')
+	}
+
+	function openWriteSaveDemo()
+	{
+		window.location.assign('aws-app-write-save.html')
+	}
+
+	function openReadDemo()
+	{
+		window.location.assign('aws-app-read.html')
+	}
+
+	function openSensorTagDemo()
+	{
+		window.location.assign('aws-app-sensortag.html')
+	}
+	</script>
+</body>
+</html>

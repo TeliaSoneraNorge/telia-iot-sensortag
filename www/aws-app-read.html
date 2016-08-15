@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<!--
+Read demo app for the AWS Lambda API.
+-->
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="viewport" content="width=device-width, user-scalable=no
+		initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+
+	<title>AWS Lambda Read IoT Demo</title>
+
+	<style>
+	@import 'ui/css/evothings-app.css';
+	</style>
+
+	<script>
+	// Redirect console.log to Evothings Workbench.
+	if (window.hyper && window.hyper.log) { console.log = hyper.log }
+	</script>
+</head>
+
+<body>
+	<header>
+		<button class="back" onclick="history.back()">
+			<img src="ui/images/arrow-left.svg" />
+		</button>
+		<img class="logotype" src="ui/images/logo.svg" alt="Evothings" />
+	</header>
+
+	<h1>AWS Lambda Read IoT Demo</h1>
+
+	<button class="green wide" onclick="startReading()">
+		Start Reading
+	</button>
+	<button class="red wide" onclick="stopReading()">
+		Stop Reading
+	</button>
+
+	<p><strong><span id="status">Tap Start button to begin</span></strong></p>
+
+	<p><strong>Detailed Instructions:</strong></p>
+
+	<p>Tap the Start button to begin reading temperature sensor values from the Amazon AWS Lambda service. Reading will occur every 5 seconds (you can change this in the code).</p>
+	<p>Tap the Stop button to cancel sensor reading.</p>
+	<p>Edit the source code of file aws-config.js to use your AWS credentials. See the README file for further information.</p>
+
+	<script src="cordova.js"></script>
+	<script src="libs/evothings/evothings.js"></script>
+	<script src="https://sdk.amazonaws.com/js/aws-sdk-2.4.12.min.js"></script>
+	<!--<script src="aws-iot-sdk-browser-bundle.js"></script>-->
+    <script src="aws-lib.js"></script>
+    <script src="aws-config.js"></script>
+
+
+	<script>
+	var timer = null
+
+	function initialise()
+	{
+		initializeAWS()
+	}
+
+	function initializeAWS()
+	{
+		// TODO: Update aws-config.js with your access keys.
+		evothings.aws.initialize(evothings.aws.config);
+		evothings.a
+	}
+
+	function startReading()
+	{
+		function successCallback(data)
+		{
+			// Display first temperature value
+			// Debug log: console.log('items: ' + JSON.stringify(items))
+			//displayMessage(items[0].Timestamp + ': ' + items[0].Value)
+			displayMessage("Received from AWS: " + JSON.stringify(data));
+		}
+
+		function errorCallback(error)
+		{
+			displayMessage('Read error: ' + JSON.stringify(error))
+		}
+
+		function readValues()
+		{
+			displayMessage('Waiting for result...')
+			evothings.aws.query('Temperature', successCallback, errorCallback)
+		}
+
+		// Start timer that reads values.
+		readValues()
+		timer && clearInterval(timer)
+		timer = setInterval(readValues, 5000)
+	}
+
+	function stopReading()
+	{
+		timer && clearInterval(timer)
+		timer = null
+		displayMessage('Stopped reading')
+	}
+
+	function displayMessage(message)
+	{
+		document.getElementById('status').innerHTML = message
+		console.log(message)
+	}
+
+	initialise()
+	</script>
+</body>
+</html>

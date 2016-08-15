@@ -18,4 +18,4 @@ useradminservice_override.properties
 *.iml
 *.ipr
 *.iws
-/.idea
+.idea

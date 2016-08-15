@@ -1,0 +1,11 @@
+https://github.com/aws/aws-iot-device-sdk-js/blob/master/README.md
+
+{
+	"host": "aknrl7ll88rhd.iot.eu-west-1.amazonaws.com",
+	"port": 8883,
+	"clientId": "baardlTI",
+	"thingName": "baardlTI",
+	"caCert": "root-CA.crt",
+	"clientCert": "04f7c6a417-certificate.pem.crt",
+	"privateKey": "04f7c6a417-private.pem.key"
+}

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<!--
+IoT app for the TI SensorTag that uses the Telia IoT
+-->
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="viewport" content="width=device-width, user-scalable=no
+		initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+
+	<title>Telia IoT -TI SensorTag Demo</title>
+
+	<style>
+	@import 'ui/css/telia-app.css';
+	</style>
+
+	<script>
+	// Redirect console.log to Evothings Workbench.
+	if (window.hyper && window.hyper.log) { console.log = hyper.log }
+	</script>
+</head>
+
+<body>
+	<header>
+		<button class="back" onclick="history.back()">
+			<img src="ui/images/arrow-left.svg" />
+		</button>
+		<img class="logotype" src="ui/images/logo.svg" alt="Evothings" />
+	</header>
+
+	<h1>AWS Lambda TI SensorTag IoT Demo</h1>
+
+	<button class="pink wide" onclick="connectToSensorTag()">
+		Start reading SensorTag
+	</button>
+	<button class="stone wide" onclick="disconnectFromSensorTag()">
+		Stop reading SensorTag
+	</button>
+
+	<p><strong>Status:</strong> <span id="status">Click the activate button on the SensorTag and tap the Start button to begin</span></p>
+
+	<p><strong>Instructions:</strong></p>
+
+	<p>This app demonstrates how to upload data from a Texas Instruments Bluetooth Smart SensorTag to the Amazon AWS Lambda service.</p>
+	<p>Edit the source code of file aws-config.js to use your Telia IoT credentials. See the README file for further information.</p>
+	<p>When ready to go, activate the SensorTag and press the Start button to connect and start uploading sensor data.</p>
+	<!--<p>To monitor temperature data, run the example app 'aws-app-read.html' on another phone.</p>-->
+
+	<script src="cordova.js"></script>
+	<script src="libs/evothings/evothings.js"></script>
+	<script src="libs/evothings/tisensortag/tisensortag.js"></script>
+	<script src="https://sdk.amazonaws.com/js/aws-sdk-2.4.12.min.js"></script>
+    <script src="aws-lib.js"></script>
+    <script src="aws-config.js"></script>
+
+	<script>
+	// SensorTag object
+	var sensortag
+
+	// Update interval is once each minute. You can make
+	// this value smaller to get more frequent updates.
+	var temperatureInterval = 5000 // Change to 5000 for 5 second intervals.
+
+	// Timer for temperature upload.
+	var temperatureTimer = null
+
+	// Variable that holds last known temperature reading.
+	var lastTemperatureReading = '0.0'
+
+	function initialise()
+	{
+		initialiseSensorTag()
+		initializeAWS()
+	}
+
+	function initializeAWS()
+	{
+		// TODO: Update aws-config.js with your access keys.
+		evothings.aws.initialize(evothings.aws.config)
+	}
+
+	function initialiseSensorTag()
+	{
+		// Create SensorTag CC2650 instance.
+		sensortag = evothings.tisensortag.createInstance(
+			evothings.tisensortag.CC2650_BLUETOOTH_SMART)
+
+		// Uncomment to use SensorTag CC2541.
+		//sensortag = evothings.tisensortag.createInstance(
+		//	evothings.tisensortag.CC2541_BLUETOOTH_SMART)
+
+		// Setting the temperature interval does not work
+		// as expected, using an interval timer instead as
+		// a workaround. See function onTemperatureTimer.
+		sensortag
+			.statusCallback(statusHandler)
+			.errorCallback(errorHandler)
+			.temperatureCallback(temperatureHandler, temperatureInterval)
+	}
+
+	function connectToSensorTag()
+	{
+		// Connect to the nearest SensorTag.
+		sensortag.connectToNearestDevice()
+
+		// Clear existing interval timer if any.
+		temperatureTimer && clearInterval(temperatureTimer)
+
+		// Start the interval timer for uploading data. This is a
+		// workaround for the SensorTag interval setting.
+		temperatureTimer = setInterval(onTemperatureTimer, temperatureInterval)
+	}
+
+	function disconnectFromSensorTag()
+	{
+		// Disconnect from the SensorTag.
+		sensortag.disconnectDevice()
+
+		// Clear interval timer.
+		temperatureTimer && clearInterval(temperatureTimer)
+		temperatureTimer = null
+
+		// Update status message.
+		displayMessage('Temperature reading stopped')
+	}
+
+	function temperatureHandler(data)
+	{
+		// Calculate temperature from raw sensor data.
+		// We just use ambient Celsius in this example,
+		// you can edit the code and use other values.
+		var values = sensortag.getTemperatureValues(data)
+		var ac = values.ambientTemperature
+		//var af = sensortag.celsiusToFahrenheit(ac)
+		//var tc = values.targetTemperature
+		//var tf = sensortag.celsiusToFahrenheit(tc)
+
+		// Update temperature reading.
+		lastTemperatureReading = ac.toFixed(2)
+	}
+
+	function onTemperatureTimer()
+	{
+		var temperature = lastTemperatureReading
+
+		function successCallback()
+		{
+			displayMessage('Written temperature: ' + temperature)
+		}
+
+		function errorCallback(error)
+		{
+			displayMessage('Write error: ' + JSON.stringify(error))
+		}
+
+		// Write the temperature value to the AWS Lambda cloud.
+		displayMessage('Writing temperature...' + temperature)
+		evothings.aws.update('Temperature', temperature, successCallback, errorCallback)
+	}
+
+	function statusHandler(status)
+	{
+		displayMessage(status)
+	}
+
+	function errorHandler(error)
+	{
+		displayMessage('SensorTag error: ' + error)
+	}
+
+	function displayMessage(message)
+	{
+		document.getElementById('status').innerHTML = message
+		console.log(message)
+	}
+
+	document.addEventListener(
+		'deviceready',
+		function() { evothings.scriptsLoaded(initialise) },
+		false)
+	</script>
+</body>
+</html>

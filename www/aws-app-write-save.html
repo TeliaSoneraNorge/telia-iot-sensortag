@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<!--
+Read/Write demo app for the AWS Lambda API.
+-->
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="viewport" content="width=device-width, user-scalable=no
+		initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+
+	<title>AWS Write and Save Demo</title>
+
+	<style>
+	@import 'ui/css/telia-app.css';
+	</style>
+
+	<script>
+	// Redirect console.log to Evothings Workbench.
+	if (window.hyper && window.hyper.log) { console.log = hyper.log }
+	</script>
+</head>
+
+<body>
+	<header>
+		<button class="back" onclick="history.back()">
+			<img src="ui/images/arrow-left.svg" />
+		</button>
+		<img class="logotype" src="ui/images/logo.svg" alt="Evothings" />
+	</header>
+
+	<h1>Telia IoT Read and Write Demo</h1>
+
+	<p><strong><span id="status">Tap the input field after Temperature. Then press write.</span></strong></p>
+
+    <label>Temperature </label><input type="number" id="temperature" maxlength="3">.<br/>
+
+	<button class="pink wide" onclick="writeValue() ">
+		Write temperature value
+	</button>
+	<button class="blue wide" onclick="readValue()">
+		Read temperature value
+	</button>
+
+	<p><strong>Detailed Instructions:</strong></p>
+
+	<p>Tap the Write button to write a temperature observation to Telia IoT.</p>
+	<p>Tap the Read button to read the latest temperature observation from Telia IoT.</p>
+	<p>Edit the source code of file aws-config.js to use your Telia IoT credentials. See the README file for further information.</p>
+
+	<script src="cordova.js"></script>
+	<script src="libs/evothings/evothings.js"></script>
+	<script src="https://sdk.amazonaws.com/js/aws-sdk-2.4.12.min.js"></script>
+    <script src="aws-lib.js"></script>
+    <script src="aws-config.js"></script>
+
+	<script>
+	function initialise()
+	{
+		initializeAWS()
+	}
+
+	function initializeAWS()
+	{
+		// TODO: Update aws-config.js with your access keys.
+		evothings.aws.initialize(evothings.aws.config);
+		openDBExample();
+	}
+
+
+    function writeValue()
+	{
+		// Generate value between -25 and + 25 (Celsius).
+		var value = document.getElementById("temperature").value; //Math.random() * 50 - 25
+		//value = value.toFixed(1)
+
+		function successCallback()
+		{
+			displayMessage('Written temperature: ' + value)
+		}
+
+		function errorCallback(error)
+		{
+			displayMessage('Write error: ' + JSON.stringify(error))
+		}
+
+		// Write the value.
+		evothings.aws.update('Temperature', value, successCallback, errorCallback)
+
+        updateDatabase('Temperature', value);
+	}
+
+	function readValue()
+	{
+        readDatabase();
+		function successCallback(data)
+		{
+			// Display first temperature value
+			// Debug log: console.log('items: ' + JSON.stringify(items))
+			//displayMessage('Temperature value: ' + items[0].Value)
+			displayMessage("Received from AWS: " + JSON.stringify(data));
+		}
+
+		function errorCallback(error)
+		{
+			displayMessage('Read error: ' + JSON.stringify(error))
+		}
+
+		// Read the value.
+		displayMessage('Waiting for result...')
+		evothings.aws.query('Temperature', successCallback, errorCallback)
+	}
+
+	function displayMessage(message)
+	{
+		document.getElementById('status').innerHTML = message
+		console.log(message)
+	}
+
+	function openDBExample() {
+        console.log("openDBExample");
+		// This works on all devices/browsers, and uses IndexedDBShim as a final fallback
+		var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB;
+
+		// Open (or create) the database
+		var open = indexedDB.open("SensortagDb", 1.2);
+
+		// Create the schema
+		open.onupgradeneeded = function () {
+            console.info("Upgrade needed");
+            console.log("Upgrading db");
+			var db = open.result;
+			var store = db.createObjectStore("SensortagStore", {keyPath: "id"});
+			var index = store.createIndex("NameIndex", ["tag.name", "tag.id"]);
+            store.put({id: 99, tag: {name: "Demo", id: "12345"}, temperature: 42});
+		};
+
+		open.onsuccess = function () {
+			// Start a new transaction
+			var db = open.result;
+			var tx = db.transaction("SensortagStore", "readwrite");
+			var store = tx.objectStore("SensortagStore");
+
+			// Query the data
+			var demoTag = store.get(99);
+
+			demoTag.onsuccess = function (event) {
+                var data = event.target.result;
+				var name = data.name;  // => "John"
+                var temperature = data.temperature;
+                console.log("Found name " + name + ", temperature " + temperature);
+                document.getElementById("temperature").value = temperature;
+			};
+
+
+			// Close the db when the transaction is done
+			tx.oncomplete = function () {
+				db.close();
+			};
+		}
+	}
+    function updateDatabase(sensorId, value) {
+        console.log("Update sensorId " + sensorId +", value: " + value);
+        // This works on all devices/browsers, and uses IndexedDBShim as a final fallback
+        var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB;
+        var open = indexedDB.open("SensortagDb", 1.2);
+
+        open.onsuccess = function () {
+            var db = open.result;
+            var tx = db.transaction("SensortagStore", "readwrite");
+            var store = tx.objectStore("SensortagStore");
+            var request = store.get(99);
+            request.onerror = function(event) {
+                console.log("Failed to load item nr: " + 99);
+            };
+            request.onsuccess = function(event) {
+                // Get the old value that we want to update
+                var data = event.target.result;
+
+                // update the value(s) in the object that you want to change
+                data.temperature = value;
+
+                // Put this updated object back into the database.
+                console.log("Write to database: " + JSON.stringify(data));
+                var requestUpdate = store.put(data);
+                requestUpdate.onerror = function(event) {
+                    console.log("Failed to update temperature, value: " + value);
+                };
+                requestUpdate.onsuccess = function(event) {
+                    console.log("Updated ok")
+                };
+            };
+            //store.put({id: 99, tag: {name: "Demo", id: "12345"}, temperature: value});
+
+            tx.oncomplete = function () {
+                db.close();
+            };
+        }
+    }
+
+    function readDatabase() {
+        // This works on all devices/browsers, and uses IndexedDBShim as a final fallback
+        var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB;
+        var open = indexedDB.open("SensortagDb", 1.2);
+
+        open.onerror = function (event) {
+            console.log(openRequest.errorCode);
+        };
+
+        open.onsuccess = function () {
+            var db = open.result;
+            var tx = db.transaction("SensortagStore", "readwrite");
+            var store = tx.objectStore("SensortagStore");
+
+            //store.put({id: 98, tag: {name: "Demo", id: "12345"}, temperature: '12'});
+            var demoTag = store.get(99);
+            demoTag.onerror = function(event) {
+                console.log("Failed to load item nr " + 99 +", from database. Reason: " + JSON.stringify(event));
+            };
+            demoTag.onsuccess = function(event) {
+                // Get the old value that we want to update
+                var data = event.target.result;
+                console.log("DemoTag: " + JSON.stringify(data));
+            };
+
+            tx.oncomplete = function () {
+                db.close();
+            };
+        }
+    }
+
+	initialise()
+	</script>
+</body>
+</html>

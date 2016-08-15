@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<!--
+Read/Write demo app for the AWS Lambda API.
+-->
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="format-detection" content="telephone=no" />
+	<meta name="viewport" content="width=device-width, user-scalable=no
+		initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+
+	<title>AWS Lambda Read/Write IoT Demo</title>
+
+	<style>
+	@import 'ui/css/evothings-app.css';
+	</style>
+
+	<script>
+	// Redirect console.log to Evothings Workbench.
+	if (window.hyper && window.hyper.log) { console.log = hyper.log }
+	</script>
+</head>
+
+<body>
+	<header>
+		<button class="back" onclick="history.back()">
+			<img src="ui/images/arrow-left.svg" />
+		</button>
+		<img class="logotype" src="ui/images/logo.svg" alt="Evothings" />
+	</header>
+
+	<h1>AWS Lambda Read/Write IoT Demo</h1>
+
+	<button class="yellow wide" onclick="writeValue()">
+		Write temperature value
+	</button>
+	<button class="blue wide" onclick="readValue()">
+		Read temperature value
+	</button>
+
+	<p><strong><span id="status">Tap Write/Read buttons to begin</span></strong></p>
+
+	<p><strong>Detailed Instructions:</strong></p>
+
+	<p>Tap the Write button to write a random temperature sensor value to the Amazon AWS Lambda service.</p>
+	<p>Tap the Read button to read the current temperature value stored by the Amazon AWS Lambda service.</p>
+	<p>Edit the source code of file aws-config.js to use your AWS credentials. See the README file for further information.</p>
+
+	<script src="cordova.js"></script>
+	<script src="libs/evothings/evothings.js"></script>
+	<script src="https://sdk.amazonaws.com/js/aws-sdk-2.4.12.min.js"></script>
+    <script src="aws-lib.js"></script>
+    <script src="aws-config.js"></script>
+
+	<script>
+	function initialise()
+	{
+		initializeAWS()
+	}
+
+	function initializeAWS()
+	{
+		// TODO: Update aws-config.js with your access keys.
+		evothings.aws.initialize(evothings.aws.config)
+	}
+
+	function writeValue()
+	{
+		// Generate value between -25 and + 25 (Celsius).
+		var value = Math.random() * 50 - 25
+		value = value.toFixed(1)
+
+		function successCallback()
+		{
+			displayMessage('Written temperature: ' + value)
+		}
+
+		function errorCallback(error)
+		{
+			displayMessage('Write error: ' + JSON.stringify(error))
+		}
+
+		// Write the value.
+		evothings.aws.update('Temperature', value, successCallback, errorCallback)
+	}
+
+	function readValue()
+	{
+		function successCallback(data)
+		{
+			// Display first temperature value
+			// Debug log: console.log('items: ' + JSON.stringify(items))
+			//displayMessage('Temperature value: ' + items[0].Value)
+			displayMessage("Received from AWS: " + JSON.stringify(data));
+		}
+
+		function errorCallback(error)
+		{
+			displayMessage('Read error: ' + JSON.stringify(error))
+		}
+
+		// Read the value.
+		displayMessage('Waiting for result...')
+		evothings.aws.query('Temperature', successCallback, errorCallback)
+	}
+
+	function displayMessage(message)
+	{
+		document.getElementById('status').innerHTML = message
+		console.log(message)
+	}
+
+	initialise()
+	</script>
+</body>
+</html>
