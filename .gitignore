@@ -1,0 +1,21 @@
+/logs
+*.class
+dependency-reduced-pom.xml
+useradminservice_override.properties
+
+# Package Files #
+*.jar
+*.war
+*.ear
+/target
+
+
+#IDE
+.classpath
+.project
+/.settings
+/*.log
+*.iml
+*.ipr
+*.iws
+/.idea
