@@ -6,7 +6,7 @@ This demo app may be run in two ways:
  
 ## Install the app
 
-From you phone install TODO raw
+From you phone install <a href="https://github.com/TeliaSoneraNorge/telia-iot-sensortag/blob/master/telia-iot-sensortag.apk?raw=true">Telia IoT Sensortag app</a>
 
 ## Use Evothings for dynamic updates.
 
