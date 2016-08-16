@@ -24,4 +24,15 @@
         <allow-intent href="itms-apps:*" />
     </platform>
     <engine name="android" spec="~5.2.1" />
+    <!--
+    https://github.com/AlexDisler/cordova-icon
+    <icon src="www/res/drawable-xxxhdpi/icon.png" />
+
+    <platform name="android">
+        <icon src="www/res/drawable-ldpi/icon.png" density="ldpi" />
+        <icon src="www/res/drawable-mdpi/icon.png" density="mdpi" />
+        <icon src="www/res/drawable-hdpi/icon.png" density="hdpi" />
+        <icon src="www/res/drawable-xhdpi/icon.png" density="xhdpi" />
+    </platform>
+    -->
 </widget>

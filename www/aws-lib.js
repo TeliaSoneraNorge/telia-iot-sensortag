@@ -27,8 +27,8 @@ evothings.aws.initialize = function(config)
 	evothings.aws.lambda = new AWS.Lambda(config);
 	console.log("ioddata")
 	evothings.aws.iotdata = new AWS.IotData({
-		accessKeyId: 'AKIAI3AQYARUN5U76XDA', /*'AKIAIPMMB2KZJPJKU4SQ',*/
-		secretAccessKey: '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',/*'v7OnsIr986y6PuU75E0zhOYFvtHwrpJydL43SPZz',*/
+		accessKeyId: 'AKIAI3AQYARUN5U76XDA',
+		secretAccessKey: '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',
 		region: 'eu-west-1',
 		endpoint: 'aknrl7ll88rhd.iot.eu-west-1.amazonaws.com'});
 }
