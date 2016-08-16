@@ -1,7 +1,7 @@
 /logs
 *.class
 dependency-reduced-pom.xml
-useradminservice_override.properties
+config-override.properties
 
 # Package Files #
 *.jar
