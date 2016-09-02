@@ -28,6 +28,7 @@ Read/Write demo app for the AWS Lambda API.
 			<img src="ui/images/arrow-left.svg" />
 		</button>
 		<img class="logotype" src="ui/images/logo.svg" alt="Evothings" />
+		<meta http-equiv="Content-Security-Policy" content="default-src *; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data:">
 	</header>
 
 	<h1>Telia IoT Read and Write Demo</h1>
@@ -52,13 +53,23 @@ Read/Write demo app for the AWS Lambda API.
 	<script src="cordova.js"></script>
 	<script src="libs/evothings/evothings.js"></script>
 	<script src="https://sdk.amazonaws.com/js/aws-sdk-2.4.12.min.js"></script>
+	<script src="telia-iot-config.js"></script>
+	<script src="telia-iot-lib.js"></script>
     <script src="aws-lib.js"></script>
     <script src="aws-config.js"></script>
+	<!--<script src="libs/jquery/jquery-3.1.0.js"/>-->
+	<!--<script src="libs/jquery/jquery.mobile-1.4.5.js"/>-->
 
 	<script>
 	function initialise()
 	{
-		initializeAWS()
+		console.log("initialize on read-write");
+		initializeTelia();
+		//initializeAWS();
+	}
+	function initializeTelia()
+	{
+		evothings.telia.iot.initialize(evothings.telia.iot.config)
 	}
 
 	function initializeAWS()
