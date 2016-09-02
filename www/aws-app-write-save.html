@@ -57,8 +57,6 @@ Read/Write demo app for the AWS Lambda API.
 	<script src="telia-iot-lib.js"></script>
     <script src="aws-lib.js"></script>
     <script src="aws-config.js"></script>
-	<!--<script src="libs/jquery/jquery-3.1.0.js"/>-->
-	<!--<script src="libs/jquery/jquery.mobile-1.4.5.js"/>-->
 
 	<script>
 	function initialise()
@@ -97,7 +95,8 @@ Read/Write demo app for the AWS Lambda API.
 		}
 
 		// Write the value.
-		evothings.aws.update('Temperature', value, successCallback, errorCallback)
+		//evothings.aws.update('Temperature', value, successCallback, errorCallback)
+		evothings.telia.iot.update('Temperature',value,successCallback,errorCallback);
 
         updateDatabase('Temperature', value);
 	}
