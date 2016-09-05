@@ -17,7 +17,13 @@ evothings.telia.iot.update = function(deviceId,payload,success, error){
 
     var xhttp = new XMLHttpRequest();
 
-    xhttp.open("POST", evothings.telia.iot.baseDeviceUrl + "/" + deviceId, payload);
+    console.log("Post to " + deviceId +", payload " + payload);
+
+    var doAsync = true;
+     xhttp.open("POST", evothings.telia.iot.baseDeviceUrl + deviceId,doAsync);
+    xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+    //xhttp.open("POST", evothings.telia.iot.baseDeviceUrl + deviceId, "{'hei': 'du'");
     //xhttp.open("GET",config.healthEndpoint + "1234", true);
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 ) {
@@ -32,11 +38,11 @@ evothings.telia.iot.update = function(deviceId,payload,success, error){
 
     xhttp.onerror = function(){
         console.log("error: " + xhttp.status + ", errortext: " + xhttp.statusText);
-        error("Failed to update to " + evothings.telia.iot.baseDeviceUrl + ". Reason: " + xhttp.statusText);
+        error("Failed to update to " + evothings.telia.iot.baseDeviceUrl + ". Content: " + JSON.stringify(payload) +"\n Reason: " + xhttp.statusText);
 
     }
 
 
-    xhttp.send();
+    xhttp.send(JSON.stringify(payload));
 }
 

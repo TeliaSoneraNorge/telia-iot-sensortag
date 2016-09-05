@@ -96,7 +96,11 @@ Read/Write demo app for the AWS Lambda API.
 
 		// Write the value.
 		//evothings.aws.update('Temperature', value, successCallback, errorCallback)
-		evothings.telia.iot.update('Temperature',value,successCallback,errorCallback);
+		var sensorValue = {
+			sensorid: 'Temperature',
+			value: value
+		}
+		evothings.telia.iot.update('baardlTI',sensorValue,successCallback,errorCallback);
 
         updateDatabase('Temperature', value);
 	}
