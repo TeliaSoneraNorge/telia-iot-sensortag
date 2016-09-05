@@ -27,10 +27,11 @@ IoT app for the TI SensorTag that uses the Telia IoT
 		<button class="back" onclick="history.back()">
 			<img src="ui/images/arrow-left.svg" />
 		</button>
-		<img class="logotype" src="ui/images/logo.svg" alt="Evothings" />
+		<img class="logotype" src="ui/images/logo.svg" alt="Telia IoT" />
+		<meta http-equiv="Content-Security-Policy" content="default-src *; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data:">
 	</header>
 
-	<h1>AWS Lambda TI SensorTag IoT Demo</h1>
+	<h1>Telia IoT Texas Instrument SensorTag IoT Demo</h1>
 
 	<button class="pink wide" onclick="connectToSensorTag()">
 		Start reading SensorTag
@@ -43,7 +44,7 @@ IoT app for the TI SensorTag that uses the Telia IoT
 
 	<p><strong>Instructions:</strong></p>
 
-	<p>This app demonstrates how to upload data from a Texas Instruments Bluetooth Smart SensorTag to the Amazon AWS Lambda service.</p>
+	<p>This app demonstrates how to upload data from a Texas Instruments Bluetooth Smart SensorTag to the Telia IoT service.</p>
 	<p>Edit the source code of file aws-config.js to use your Telia IoT credentials. See the README file for further information.</p>
 	<p>When ready to go, activate the SensorTag and press the Start button to connect and start uploading sensor data.</p>
 	<!--<p>To monitor temperature data, run the example app 'aws-app-read.html' on another phone.</p>-->
@@ -52,40 +53,48 @@ IoT app for the TI SensorTag that uses the Telia IoT
 	<script src="libs/evothings/evothings.js"></script>
 	<script src="libs/evothings/tisensortag/tisensortag.js"></script>
 	<script src="https://sdk.amazonaws.com/js/aws-sdk-2.4.12.min.js"></script>
+	<script src="telia-iot-config.js"></script>
+	<script src="telia-iot-lib.js"></script>
     <script src="aws-lib.js"></script>
     <script src="aws-config.js"></script>
 
 	<script>
 	// SensorTag object
-	var sensortag
+	var sensortag;
 
 	// Update interval is once each minute. You can make
 	// this value smaller to get more frequent updates.
-	var temperatureInterval = 5000 // Change to 5000 for 5 second intervals.
+	var temperatureInterval = 5000; // Change to 5000 for 5 second intervals.
 
 	// Timer for temperature upload.
-	var temperatureTimer = null
+	var temperatureTimer = null;
 
 	// Variable that holds last known temperature reading.
-	var lastTemperatureReading = '0.0'
+	var lastTemperatureReading = '0.0';
 
 	function initialise()
 	{
-		initialiseSensorTag()
-		initializeAWS()
+		console.log("initialize on read-write");
+		initialiseSensorTag();
+		initializeTelia();
+		//initializeAWS();
+	}
+	function initializeTelia()
+	{
+		evothings.telia.iot.initialize(evothings.telia.iot.config);
 	}
 
 	function initializeAWS()
 	{
 		// TODO: Update aws-config.js with your access keys.
-		evothings.aws.initialize(evothings.aws.config)
+		evothings.aws.initialize(evothings.aws.config);
 	}
 
 	function initialiseSensorTag()
 	{
 		// Create SensorTag CC2650 instance.
 		sensortag = evothings.tisensortag.createInstance(
-			evothings.tisensortag.CC2650_BLUETOOTH_SMART)
+			evothings.tisensortag.CC2650_BLUETOOTH_SMART);
 
 		// Uncomment to use SensorTag CC2541.
 		//sensortag = evothings.tisensortag.createInstance(
@@ -97,7 +106,7 @@ IoT app for the TI SensorTag that uses the Telia IoT
 		sensortag
 			.statusCallback(statusHandler)
 			.errorCallback(errorHandler)
-			.temperatureCallback(temperatureHandler, temperatureInterval)
+			.temperatureCallback(temperatureHandler, temperatureInterval);
 	}
 
 	function connectToSensorTag()
@@ -157,7 +166,12 @@ IoT app for the TI SensorTag that uses the Telia IoT
 
 		// Write the temperature value to the AWS Lambda cloud.
 		displayMessage('Writing temperature...' + temperature)
-		evothings.aws.update('Temperature', temperature, successCallback, errorCallback)
+		//evothings.aws.update('Temperature', temperature, successCallback, errorCallback)
+		var sensorValue = {
+			sensorid: 'Temperature',
+			value: temperature
+		}
+		evothings.telia.iot.update('baardlTI',sensorValue,successCallback,errorCallback);
 	}
 
 	function statusHandler(status)
